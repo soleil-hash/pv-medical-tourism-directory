@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Check, ChevronDown, Info } from 'lucide-react'
 
+// Declare gtag for TypeScript
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void
+    dataLayer?: any[]
+  }
+}
+
 interface FormData {
   name: string
   phone: string
@@ -73,6 +81,16 @@ export default function Home() {
 
       setIsSubmitted(true)
       setIsSubmitting(false)
+      
+      // Trigger Google conversion event
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'conversion', {
+          'send_to': 'AW-17907845328/h3DvCMadoe0bENCRkNtC',
+          'value': 1.0,
+          'currency': 'MXN'
+        })
+      }
+      
       reset()
       setTimeout(() => {
         setIsSubmitted(false)

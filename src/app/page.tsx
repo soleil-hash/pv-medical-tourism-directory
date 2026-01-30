@@ -14,7 +14,10 @@ declare global {
 
 interface FormData {
   name: string
-  phone: string
+  phoneCountryCode: string
+  phoneAreaCode: string
+  phoneFirst3: string
+  phoneLast4: string
   dentalWorkType: string
   timeframe: string
 }
@@ -61,9 +64,12 @@ export default function Home() {
         'researching': 'Just researching options',
       }
 
+      // Combine phone number parts
+      const fullPhone = `+${data.phoneCountryCode} (${data.phoneAreaCode}) ${data.phoneFirst3}-${data.phoneLast4}`
+
       const formData = new URLSearchParams()
       formData.append('entry.141213607', data.name)
-      formData.append('entry.607915724', data.phone)
+      formData.append('entry.607915724', fullPhone)
       formData.append('entry.348284541', dentalWorkTypeMap[data.dentalWorkType] || data.dentalWorkType)
       formData.append('entry.199398544', timeframeMap[data.timeframe] || data.timeframe)
 
@@ -212,28 +218,109 @@ export default function Home() {
 
                   {/* WhatsApp Phone */}
                   <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      WhatsApp Phone Number *
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number *
                     </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      placeholder="+1 (555) 123-4567"
-                      {...register('phone', { required: 'Phone number is required' })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-transparent text-gray-900"
-                    />
+                    <div className="flex gap-2 items-center">
+                      <span className="text-gray-600 text-sm">+</span>
+                      <input
+                        type="tel"
+                        id="phoneCountryCode"
+                        maxLength={3}
+                        placeholder="1"
+                        defaultValue="1"
+                        {...register('phoneCountryCode', {
+                          required: 'Country code is required',
+                          pattern: {
+                            value: /^\d+$/,
+                            message: 'Must be digits only',
+                          },
+                        })}
+                        className="w-12 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-transparent text-gray-900 text-center"
+                        onInput={(e) => {
+                          const value = e.currentTarget.value.replace(/\D/g, '')
+                          e.currentTarget.value = value
+                          if (value.length === 3) {
+                            document.getElementById('phoneAreaCode')?.focus()
+                          }
+                        }}
+                      />
+                      <span className="text-gray-600 text-sm">(</span>
+                      <input
+                        type="tel"
+                        id="phoneAreaCode"
+                        maxLength={3}
+                        placeholder="555"
+                        {...register('phoneAreaCode', {
+                          required: 'Area code is required',
+                          pattern: {
+                            value: /^\d{3}$/,
+                            message: 'Must be exactly 3 digits',
+                          },
+                          validate: (value) => value.length === 3 || 'Area code must be 3 digits',
+                        })}
+                        className="w-16 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-transparent text-gray-900 text-center"
+                        onInput={(e) => {
+                          const value = e.currentTarget.value.replace(/\D/g, '')
+                          e.currentTarget.value = value
+                          if (value.length === 3) {
+                            document.getElementById('phoneFirst3')?.focus()
+                          }
+                        }}
+                      />
+                      <span className="text-gray-600 text-sm">)</span>
+                      <input
+                        type="tel"
+                        id="phoneFirst3"
+                        maxLength={3}
+                        placeholder="123"
+                        {...register('phoneFirst3', {
+                          required: 'Phone number is required',
+                          pattern: {
+                            value: /^\d{3}$/,
+                            message: 'Must be exactly 3 digits',
+                          },
+                          validate: (value) => value.length === 3 || 'Must be 3 digits',
+                        })}
+                        className="w-16 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-transparent text-gray-900 text-center"
+                        onInput={(e) => {
+                          const value = e.currentTarget.value.replace(/\D/g, '')
+                          e.currentTarget.value = value
+                          if (value.length === 3) {
+                            document.getElementById('phoneLast4')?.focus()
+                          }
+                        }}
+                      />
+                      <span className="text-gray-600 text-sm">-</span>
+                      <input
+                        type="tel"
+                        id="phoneLast4"
+                        maxLength={4}
+                        placeholder="7890"
+                        {...register('phoneLast4', {
+                          required: 'Phone number is required',
+                          pattern: {
+                            value: /^\d{4}$/,
+                            message: 'Must be exactly 4 digits',
+                          },
+                          validate: (value) => value.length === 4 || 'Must be 4 digits',
+                        })}
+                        className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#667eea] focus:border-transparent text-gray-900 text-center"
+                        onInput={(e) => {
+                          const value = e.currentTarget.value.replace(/\D/g, '')
+                          e.currentTarget.value = value
+                        }}
+                      />
+                    </div>
                     <div className="flex items-start gap-2 mt-2 text-xs text-gray-600">
                       <Info className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
                       <p>
                         Dental offices in Mexico commonly use WhatsApp for scheduling and contacting clients.
                       </p>
                     </div>
-                    {errors.phone && (
+                    {(errors.phoneCountryCode || errors.phoneAreaCode || errors.phoneFirst3 || errors.phoneLast4) && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.phone.message}
+                        Please complete all phone number fields
                       </p>
                     )}
                   </div>
